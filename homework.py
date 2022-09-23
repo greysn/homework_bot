@@ -2,10 +2,11 @@ from http import HTTPStatus
 import logging
 import os
 import time
-from typing import Dict
 import requests
 import telegram
 from dotenv import load_dotenv
+
+from exeptions import APIErrException
 
 
 logging.basicConfig(
@@ -88,20 +89,13 @@ def get_api_answer(current_timestamp):
             raise SystemError(f'Ошибка код {homework_statuses.status_code}')
         elif homework_statuses.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
             raise SystemError(f'Ошибка код {homework_statuses.status_code}')
-        # не понимаю зачем проверять отдельно 408 и 500, если всё попадёт в
-        # else. не проходили тесты, пока не добавил
         else:
             raise SystemError(
                 f'Недоступен Эндпоинт, код {homework_statuses.status_code}')
 
 
 def check_response(response):
-    """Функция проверяет ответ API на корректность.
-    В качестве параметра функция получает ответ API, приведенный к
-    типам данных Python. Если ответ API соответствует ожиданиям,
-    то функция должна вернуть список домашних работ
-    (он может быть и пустым), доступный в ответе API по ключу 'homeworks'.
-    """
+    """Функция проверяет ответ API на корректность."""
     try:
         homeworks = response['homeworks']
     except KeyError:
@@ -116,25 +110,22 @@ def check_response(response):
 
 
 def parse_status(homework):
-    """Функция извлекает из информации.
-    Конкретной домашней работе статус этой работы.
-    В качестве параметра функция получает только один элемент
-    из списка домашних работ. В случае успеха, функция
-    возвращает подготовленную для отправки в Telegram строку,
-    содержащую один из вердиктов словаря HOMEWORK_STATUSES.
-    """
-    if not isinstance(homework, Dict):
-        raise TypeError("homework не является словарем!")
-    homework_name = homework.get('homework_name')
-    if homework_name is None:
-        raise KeyError('У homework нет имени')
+    """Парсинг информации о домашке."""
+    if 'homework_name' in homework:
+        homework_name = homework.get('homework_name')
+    else:
+        msg = 'API have returned a homework without a "homework_name" key'
+        raise KeyError(msg)
     homework_status = homework.get('status')
-    if homework_status is None:
-        raise KeyError('У homework нет статуса')
-    verdict = HOMEWORK_STATUSES.get(homework_status)
-    if verdict is None:
-        raise KeyError(f'Ошибка статуса homework : {verdict}')
-    logging.info(f'Новый статус {verdict}')
+
+    try:
+        verdict = HOMEWORK_STATUSES[homework_status]
+    except KeyError:
+        msg = ('API have returned'
+               f'an unknown status {homework_status} for "{homework_name}"'
+               )
+        raise APIErrException(msg)
+
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
