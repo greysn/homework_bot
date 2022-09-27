@@ -1,6 +1,7 @@
 from http import HTTPStatus
 import logging
 import os
+import sys
 import time
 import requests
 import telegram
@@ -141,7 +142,8 @@ def main():
     """
     global old_message
     if not check_tokens():
-        raise SystemExit('Я вышел')
+        logger.info('Я вышел')
+        sys.exit(1)
 
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time()) - RETRY_TIME
