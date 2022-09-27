@@ -41,6 +41,7 @@ HOMEWORK_STATUSES = {
 def send_message(bot, message):
     """Отправка сообщения в Телеграм."""
     try:
+        logger.info('Отправка сообщения начата!')
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logger.info(
             f'Сообщение в Telegram отправлено: {message}')
@@ -49,27 +50,12 @@ def send_message(bot, message):
             f'Сообщение в Telegram не отправлено: {telegram_error}')
 
 
-class TheAnswerIsNot200Error(Exception):
-    """Ответ сервера не равен 200."""
-
-
-class EmptyDictionaryOrListError(Exception):
-    """Пустой словарь или список."""
-
-
-class UndocumentedStatusError(Exception):
-    """Недокументированный статус."""
-
-
-class RequestExceptionError(Exception):
-    """Ошибка запроса."""
-
-
 def get_api_answer(current_timestamp):
     """Получение данных с API YP."""
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
     try:
+        logger.info('Начало получения данных с API YP')
         homework_statuses = requests.get(ENDPOINT,
                                          headers=HEADERS,
                                          params=params)
@@ -99,7 +85,6 @@ def check_response(response):
     try:
         homeworks = response['homeworks']
     except KeyError:
-        logger.error('Отсутствует ключ у homeworks')
         raise KeyError('Отсутствует ключ у homeworks')
     try:
         homework = homeworks[0]
@@ -138,13 +123,13 @@ def check_tokens():
     if all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID]):
         return True
     elif PRACTICUM_TOKEN is None:
-        logger.info('Отсутствует PRACTICUM_TOKEN')
+        logger.critical('Отсутствует PRACTICUM_TOKEN')
         return False
     elif TELEGRAM_TOKEN is None:
-        logger.info('Отсутствует TELEGRAM_TOKEN')
+        logger.critical('Отсутствует TELEGRAM_TOKEN')
         return False
     elif TELEGRAM_CHAT_ID is None:
-        logger.info('Отсутствует TELEGRAM_CHAT_ID')
+        logger.critical('Отсутствует TELEGRAM_CHAT_ID')
         return False
 
 
@@ -166,10 +151,10 @@ def main():
             if type(current_timestamp) is not int:
                 raise SystemError('В функцию передана не дата')
             response = get_api_answer(current_timestamp)
-            response = check_response(response)
+            homeworks = check_response(response)
 
-            if len(response) > 0:
-                homework_status = parse_status(response[0])
+            if len(homeworks):
+                homework_status = parse_status(homeworks[0])
                 if homework_status is not None:
                     send_message(bot, homework_status)
             else:
