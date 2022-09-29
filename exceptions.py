@@ -8,17 +8,21 @@ class APIErrException(Exception):
         return self.message
 
 
-class TheAnswerIsNot200Error(Exception):
+class TheAnswerIsNot200Error(APIErrException):
     """Ответ сервера не равен 200."""
 
 
-class EmptyDictionaryOrListError(Exception):
+class EmptyDictionaryOrListError(APIErrException):
     """Пустой словарь или список."""
 
 
-class UndocumentedStatusError(Exception):
+class UndocumentedStatusError(APIErrException):
     """Недокументированный статус."""
 
 
-class RequestExceptionError(Exception):
+class RequestExceptionError(APIErrException):
     """Ошибка запроса."""
+
+
+class LogicExceptionError(APIErrException):
+    """Ошибка логики приложения."""
