@@ -10,13 +10,6 @@ from dotenv import load_dotenv
 import exceptions as my_exc
 
 
-logging.basicConfig(
-    level=logging.INFO,
-    filename='bot.log',
-    format='%(asctime)s, %(levelname)s, %(message)s,'
-           '%(funcName)s, %(lineno)s',
-    filemode='a',
-)
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())
 
@@ -118,7 +111,6 @@ def main():
     работы из обновлений и отправляет сообщение в,
     Telegram и ждет некоторое время и делает новый запрос
     """
-    global old_message
     if not check_tokens():
         message = 'Отсутствует один или несколько токенов'
         logger.info('Я вышел')
@@ -145,13 +137,18 @@ def main():
                 requests.exceptions.RequestException) as error:
             message = f'Сбой в работе программы: {error}'
             logger.error(message)
-            if message != old_message:
-                old_message = message
-                bot.send_message(TELEGRAM_CHAT_ID, message)
+            bot.send_message(TELEGRAM_CHAT_ID, message)
         finally:
             current_timestamp = int(time.time())
             time.sleep(RETRY_TIME)
 
 
 if __name__ == '__main__':
+    logging.basicConfig(
+        level=logging.INFO,
+        filename='bot.log',
+        format='%(asctime)s, %(levelname)s, %(message)s,'
+               '%(funcName)s, %(lineno)s',
+        filemode='a',
+    )
     main()
