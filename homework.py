@@ -47,12 +47,14 @@ def get_api_answer(current_timestamp):
     """Получение данных с API YP."""
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
-
-    logger.info('Начало получения данных с API YP')
-    homework_statuses = requests.get(ENDPOINT,
-                                     headers=HEADERS,
-                                     params=params,
-                                     timeout=10)
+    try:
+        logger.info('Начало получения данных с API YP')
+        homework_statuses = requests.get(ENDPOINT,
+                                         headers=HEADERS,
+                                         params=params,
+                                         timeout=10)
+    except ConnectionError as error:
+        raise my_exc.RequestExceptionError(f'Error in the request {error}')
     if homework_statuses.status_code != HTTPStatus.OK:
         homework_statuses.raise_for_status()
 
