@@ -127,8 +127,8 @@ def main():
             response = get_api_answer(current_timestamp)
             homeworks = check_response(response)
 
-            if len(homeworks):
-                homework_status = parse_status(homeworks[0])
+            if homeworks:
+                homework_status = parse_status(homeworks)
                 if homework_status is not None:
                     send_message(bot, homework_status)
             else:
