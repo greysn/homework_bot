@@ -74,7 +74,7 @@ def check_response(response):
                'список домашних работ пуст'.format(homeworks))
         raise my_exc.EmptyDictionaryOrListError(msg)
 
-    return homeworks[0]
+    return homeworks
 
 
 def parse_status(homework):
