@@ -68,9 +68,8 @@ def check_response(response):
 
     homeworks = response.get('homeworks')
     if not homeworks or not isinstance(homeworks, list):
-        msg = 'homeworks = {} : нет искомого ключа или ' \
-              'список домашних работ пуст'.format(homeworks)
-        logger.error(msg)
+        msg = ('homeworks = {} : нет искомого ключа или '
+               'список домашних работ пуст'.format(homeworks))
         raise my_exc.EmptyDictionaryOrListError(msg)
 
     return homeworks[0]
@@ -113,7 +112,7 @@ def main():
     """
     if not check_tokens():
         message = 'Отсутствует один или несколько токенов'
-        logger.info('Я вышел')
+        logger.critical('Я вышел')
         sys.exit(message)
 
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
